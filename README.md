@@ -1,13 +1,33 @@
-# Event Manager App – Prototype
+# Event Manager – Smart College Event Management Platform
 
-College event management app built using Flutter & Firebase.
+## 🧠 Problem Statement
+College events are scattered across WhatsApp groups, posters, and word-of-mouth.  
+Students miss events, organizers struggle with reach, and there is no unified system.
 
-This repository contains **design documentation only**.
-No application source code is stored here.
+## 💡 Solution
+Event Manager is a centralized mobile platform that allows:
+- Clubs to post & manage events
+- Students to explore upcoming events
+- Smart calendar integration
+- Firebase-powered authentication & data sync
 
-## App Goals
-- Manage college clubs & events
-- Event calendar with reminders
-- User authentication
-- Club-wise event feeds
-- Admin event publishing panel
+## 🔐 Security First Approach
+- Firebase Authentication
+- Secure Firestore rules
+- Role-based access control
+- Tamper detection (future scope)
+
+## 🛠️ Tech Stack
+- Flutter (Dart)
+- Firebase Auth
+- Cloud Firestore
+- Firebase Storage
+
+## 📌 Current Status
+This repository currently contains:
+- Architecture plans
+- Wireframes
+- Database design
+- Feature roadmap
+
+Code will be added after prototype validation.
