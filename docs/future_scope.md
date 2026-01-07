@@ -1,4 +1,0 @@
-- Mobile tamper detection system
-- Push notification alerts
-- Admin dashboard
-- Event analytics & engagement tracking
