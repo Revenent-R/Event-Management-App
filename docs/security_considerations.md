@@ -1,0 +1,4 @@
+- Firebase rules restrict write access to authorized users only
+- No sensitive files are stored in GitHub
+- Role-based permissions for clubs and students
+- Prototype credentials are local-only
