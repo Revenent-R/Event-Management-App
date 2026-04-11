@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Cultural Club",
+    "login": "cultural_club@iiitkottayam.ac.in",
+    "password": "CHANGE_ME"
+  },
+  {
+    "name": "Technical Club",
+    "login": "technical_club@iiitkottayam.ac.in",
+    "password": "CHANGE_ME"
+  },
+  {
+    "name": "Music Club",
+    "login": "music_club@iiitkottayam.ac.in",
+    "password": "CHANGE_ME"
+  },
+  {
+    "name": "Drama Club",
+    "login": "drama_club@iiitkottayam.ac.in",
+    "password": "CHANGE_ME"
+  },
+  {
+    "name": "Literary Club",
+    "login": "literary_club@iiitkottayam.ac.in",
+    "password": "CHANGE_ME"
+  },
+  {
+    "name": "Sports Club",
+    "login": "sports_club@iiitkottayam.ac.in",
+    "password": "CHANGE_ME"
+  },
+  {
+    "name": "Photography Club",
+    "login": "photography_club@iiitkottayam.ac.in",
+    "password": "CHANGE_ME"
+  }
+]

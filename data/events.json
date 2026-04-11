@@ -1,0 +1,58 @@
+[
+  {
+    "host": "Cultural Club",
+    "name": "College Cultural Fest 2026",
+    "time": "6:00 p.m. - 9:00 p.m.",
+    "date": "2026-01-27",
+    "venue": "College Ground",
+    "description": "A vibrant evening of music, dance, drama, and art performances by students."
+  },
+  {
+    "host": "Technical Club",
+    "name": "Tech Innovators Hackathon",
+    "time": "9:00 a.m. - 9:00 p.m.",
+    "date": "2026-02-10",
+    "venue": "Main Seminar Hall",
+    "description": "24-hour hackathon focusing on AI, Web, and App development challenges."
+  },
+  {
+    "host": "Literary Club",
+    "name": "Ink & Ideas Literature Meet",
+    "time": "4:00 p.m. - 7:00 p.m.",
+    "date": "2026-02-18",
+    "venue": "Library Conference Room",
+    "description": "Open mic poetry, storytelling, and book discussion session."
+  },
+  {
+    "host": "Music Club",
+    "name": "Battle of Bands",
+    "time": "5:30 p.m. - 8:30 p.m.",
+    "date": "2026-03-02",
+    "venue": "Open Air Theatre",
+    "description": "Inter-department band competition with live performances."
+  },
+  {
+    "host": "Sports Club",
+    "name": "Annual Sports Meet",
+    "time": "7:00 a.m. - 6:00 p.m.",
+    "date": "2026-03-12",
+    "venue": "Sports Complex",
+    "description": "Track and field events, team sports, and fitness challenges."
+  },
+  {
+    "host": "Photography Club",
+    "name": "Through the Lens Workshop",
+    "time": "3:00 p.m. - 6:00 p.m.",
+    "date": "2026-03-20",
+    "venue": "Media Lab",
+    "description": "Hands-on workshop on portrait and event photography techniques."
+  },
+  {
+    "host": "Drama Club",
+    "name": "StageCraft Theatre Night",
+    "time": "6:30 p.m. - 8:30 p.m.",
+    "date": "2026-04-05",
+    "venue": "Auditorium",
+    "description": "Live stage play and short skits performed by the drama society."
+  }
+]
