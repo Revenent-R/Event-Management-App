@@ -38,42 +38,26 @@ class AdminLogin extends State<AdminState> {
     return "${code[0].toUpperCase()}${code.substring(1, d)} ${code[d + 1].toUpperCase()}${code.substring(d + 2)}";
   }
 
-  Widget popupDialog({required String text, required bool status}) {
-    return Dialog(
-      backgroundColor: const Color(0xF0FAEFEF),
-      elevation: 0,
-      child: Container(
-        width: 240,
-        height: 220,
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(2)),
-        child: Column(
-          children: [
-            const SizedBox(height: 48),
-            Icon(
-              status ? Icons.check_circle : Icons.error,
-              size: 64,
-              color: status ? const Color(0xFF50C878) : const Color(0xFFA52A2A),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              text,
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-          ],
+  void showSnack(String text, bool success) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(text),
+          backgroundColor: success ? Colors.green : Colors.red,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
-      ),
-    );
+      );
   }
 
   Future<void> login(BuildContext context) async {
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (_) {
-          return popupDialog(text: "Fill all fields", status: false);
-        },
-      );
+      showSnack("Fill all fields", false);
       return;
     }
 
@@ -91,16 +75,10 @@ class AdminLogin extends State<AdminState> {
 
       if (!mounted) return;
 
-      showDialog(
-        context: context,
-        builder: (_) {
-          return popupDialog(text: "Welcome back!", status: true);
-        },
-      );
+      showSnack("Welcome back!", true);
 
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(seconds: 1), () {
         if (!mounted) return;
-        Navigator.pop(context);
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => HomepageState()),
@@ -109,30 +87,15 @@ class AdminLogin extends State<AdminState> {
       });
     } on FirebaseAuthException catch (e) {
       await FirebaseAuth.instance.signOut();
-      if (!mounted) return;
-
-      showDialog(
-        context: context,
-        builder: (_) {
-          return popupDialog(text: formatError(e.code), status: false);
-        },
-      );
+      showSnack(formatError(e.code), false);
     } catch (e) {
       await FirebaseAuth.instance.signOut();
-      if (!mounted) return;
-
-      showDialog(
-        context: context,
-        builder: (_) {
-          return popupDialog(text: "Invalid Credentials", status: false);
-        },
-      );
+      showSnack("Invalid Credentials", false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -237,7 +200,7 @@ class AdminLogin extends State<AdminState> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (_) => UserLoginState()));
+                                builder: (_) => const UserLoginState()));
                       },
                       child: const Text("Login as User"),
                     ),
@@ -247,7 +210,7 @@ class AdminLogin extends State<AdminState> {
                             context,
                             MaterialPageRoute(
                                 builder: (_) =>
-                                    AdminRegistrationState()));
+                                const AdminRegistrationState()));
                       },
                       child: const Text("Register Organization"),
                     ),

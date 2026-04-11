@@ -19,6 +19,9 @@ class UserRegistration extends State<UserRegistrationState> {
 
   bool isLoading = false;
 
+  static const Color primary = Color(0xFF9F9AE6);
+  static const Color textMain = Color(0xFF334155);
+
   @override
   void dispose() {
     emailController.dispose();
@@ -36,9 +39,7 @@ class UserRegistration extends State<UserRegistrationState> {
 
     await http.post(
       Uri.parse("https://event-manager-backend-ya4p.onrender.com/login"),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         'uid': user.uid,
         'role': 'user',
@@ -48,58 +49,30 @@ class UserRegistration extends State<UserRegistrationState> {
     await user.getIdTokenResult(true);
   }
 
-  String formatError(String code) {
-    if (!code.contains('-')) return code;
-    var d = code.indexOf('-');
-    return "${code[0].toUpperCase()}${code.substring(1, d)} ${code[d + 1].toUpperCase()}${code.substring(d + 2)}";
-  }
-
-  Widget popupDialog({required String text, required bool status}) {
-    return Dialog(
-      backgroundColor: const Color(0xF0FAEFEF),
-      elevation: 0,
-      child: Container(
-        width: 240,
-        height: 220,
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(2)),
-        child: Column(
-          children: [
-            const SizedBox(height: 48),
-            Icon(
-              status ? Icons.check_circle : Icons.error,
-              size: 64,
-              color: status ? const Color(0xFF50C878) : const Color(0xFFA52A2A),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              text,
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-          ],
+  void showSnack(String text, bool success) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(text),
+          backgroundColor:
+          success ? primary : const Color(0xFFEF4444),
         ),
-      ),
-    );
+      );
   }
 
   Future<void> register(BuildContext context) async {
     if (isLoading) return;
 
-    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (_) =>
-            popupDialog(text: "Fill all fields", status: false),
-      );
+    if (emailController.text.isEmpty ||
+        passwordController.text.isEmpty) {
+      showSnack("Fill all fields", false);
       return;
     }
 
     if (!verifyEmail()) {
-      showDialog(
-        context: context,
-        builder: (_) =>
-            popupDialog(text: "Invalid email domain", status: false),
-      );
+      showSnack("Invalid email domain", false);
       return;
     }
 
@@ -115,176 +88,135 @@ class UserRegistration extends State<UserRegistrationState> {
 
       if (!mounted) return;
 
-      showDialog(
-        context: context,
-        builder: (_) =>
-            popupDialog(text: "You’re all set!", status: true),
-      );
+      showSnack("You’re all set!", true);
 
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(seconds: 1), () {
         if (!mounted) return;
-        Navigator.pop(context);
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => HomepageState()),
               (route) => false,
         );
       });
-    } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-
-      showDialog(
-        context: context,
-        builder: (_) =>
-            popupDialog(text: formatError(e.code), status: false),
-      );
     } catch (e) {
-      if (!mounted) return;
-
-      showDialog(
-        context: context,
-        builder: (_) =>
-            popupDialog(text: "Error occurred", status: false),
-      );
+      showSnack("Error occurred", false);
     } finally {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
-  static const Color primary = Color(0xFF8B5CF6);
-  static const Color bgLight = Color(0xFFF5F3FF);
-  static const Color cardBg = Colors.white;
-  static const Color textMain = Color(0xFF1F2937);
-  static const Color textMuted = Color(0xFF6B7280);
-
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      backgroundColor: bgLight,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFEDE9FE),
-                    Color(0xFFFFFFFF),
-                    Color(0xFFF3E8FF),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFFF5F3FF),
+              Color(0xFFEDE9FE),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Card(
+              elevation: 6,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.school,
+                        size: 48, color: primary),
+                    const SizedBox(height: 12),
+
+                    const Text(
+                      "Register As User",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: textMain,
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    TextField(
+                      controller: emailController,
+                      decoration: InputDecoration(
+                        prefixIcon:
+                        const Icon(Icons.person),
+                        labelText: "Username",
+                        border: OutlineInputBorder(
+                          borderRadius:
+                          BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    TextField(
+                      obscureText: true,
+                      controller: passwordController,
+                      decoration: InputDecoration(
+                        prefixIcon:
+                        const Icon(Icons.lock),
+                        labelText: "Password",
+                        border: OutlineInputBorder(
+                          borderRadius:
+                          BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                            BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed:
+                        isLoading ? null : () => register(context),
+                        child: isLoading
+                            ? const CircularProgressIndicator(
+                            color: Colors.white)
+                            : const Text("Register"),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) =>
+                              const UserLoginState()),
+                        );
+                      },
+                      child: const Text(
+                          "Already have an account? Login"),
+                    ),
                   ],
                 ),
               ),
             ),
-            Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Container(
-                  padding: const EdgeInsets.all(28),
-                  decoration: BoxDecoration(
-                    color: cardBg,
-                    borderRadius: BorderRadius.circular(40),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        "Register As User",
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: textMain,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        "Register so you don't miss any events",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: textMuted,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 32),
-                      _inputField(
-                        icon: Icons.person,
-                        label: "Username",
-                        controller: emailController,
-                        hint: "Enter your username",
-                      ),
-                      const SizedBox(height: 20),
-                      _inputField(
-                        icon: Icons.lock,
-                        label: "Password",
-                        hint: "Create a password",
-                        controller: passwordController,
-                        obscure: true,
-                        suffixIcon: Icons.visibility_off,
-                      ),
-                      const SizedBox(height: 28),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed:
-                          isLoading ? null : () => register(context),
-                          child: isLoading
-                              ? const CircularProgressIndicator()
-                              : Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment.center,
-                            children: const [
-                              Text("Register Yourself"),
-                              SizedBox(width: 8),
-                              Icon(Icons.arrow_forward),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) =>
-                                const UserLoginState()),
-                          );
-                        },
-                        child: const Text("Already have an account? Log in"),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  static Widget _inputField({
-    required IconData icon,
-    required String label,
-    required String hint,
-    required TextEditingController controller,
-    bool obscure = false,
-    IconData? suffixIcon,
-  }) {
-    return TextField(
-      controller: controller,
-      obscureText: obscure,
-      decoration: InputDecoration(
-        hintText: hint,
-        prefixIcon: Icon(icon),
-        suffixIcon: suffixIcon != null ? Icon(suffixIcon) : null,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
+          ),
         ),
       ),
     );

@@ -37,32 +37,21 @@ class EventCreation extends State<EventCreationState> {
     super.dispose();
   }
 
-  Widget popupDialog({required String text, required bool status}) {
-    return Dialog(
-      backgroundColor: const Color(0xF0FAEFEF),
-      elevation: 0,
-      child: Container(
-        width: 240,
-        height: 220,
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(2)),
-        child: Column(
-          children: [
-            const SizedBox(height: 48),
-            Icon(
-              status ? Icons.check_circle : Icons.error,
-              size: 64,
-              color: status ? const Color(0xFF50C878) : const Color(0xFFA52A2A),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              text,
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-          ],
+  void showSnack(String text, bool success) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(text),
+          backgroundColor: success ? Colors.green : Colors.red,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
-      ),
-    );
+      );
   }
 
   void pickDate(BuildContext context) async {
@@ -111,10 +100,17 @@ class EventCreation extends State<EventCreationState> {
         eventDate == null ||
         eventStartTime == null ||
         eventEndTime == null) {
-      showDialog(
-        context: context,
-        builder: (_) => popupDialog(text: "Fill all fields", status: false),
-      );
+      showSnack("Fill all fields", false);
+      return;
+    }
+
+    final startMinutes =
+        eventStartTime!.hour * 60 + eventStartTime!.minute;
+    final endMinutes =
+        eventEndTime!.hour * 60 + eventEndTime!.minute;
+
+    if (startMinutes >= endMinutes) {
+      showSnack("End time must be after start time", false);
       return;
     }
 
@@ -152,14 +148,10 @@ class EventCreation extends State<EventCreationState> {
 
       if (!mounted) return;
 
-      showDialog(
-        context: context,
-        builder: (_) => popupDialog(text: "Event is live!", status: true),
-      );
+      showSnack("Event is live!", true);
 
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(seconds: 1), () {
         if (!mounted) return;
-        Navigator.pop(context);
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => HomepageState()),
@@ -167,12 +159,7 @@ class EventCreation extends State<EventCreationState> {
         );
       });
     } catch (e) {
-      if (!mounted) return;
-
-      showDialog(
-        context: context,
-        builder: (_) => popupDialog(text: "Error Occurred", status: false),
-      );
+      showSnack("Error Occurred", false);
     } finally {
       if (mounted) {
         setState(() => isLoading = false);
@@ -182,7 +169,6 @@ class EventCreation extends State<EventCreationState> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: background,
       body: SafeArea(
@@ -323,8 +309,8 @@ class EventCreation extends State<EventCreationState> {
               controller: controller,
               maxLines: maxLines,
               decoration: InputDecoration(
-                hintText: hint,
                 border: InputBorder.none,
+                hintText: hint
               ),
             ),
           ),
@@ -355,8 +341,8 @@ class EventCreation extends State<EventCreationState> {
                 Icon(icon, size: 18, color: primary),
                 const SizedBox(width: 8),
                 Text(label,
-                    style: const TextStyle(
-                        color: textMuted, fontSize: 13)),
+                    style:
+                    const TextStyle(color: textMuted, fontSize: 13)),
               ],
             ),
             const SizedBox(height: 8),

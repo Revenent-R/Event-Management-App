@@ -160,19 +160,25 @@ class Homepage extends State<HomepageState> {
         .doc(FirebaseAuth.instance.currentUser?.uid)
         .collection('events');
 
-    if (selectedIndices.contains(key)) {
-      final snapshots =
-      await userRef.where("key", isEqualTo: key).get();
-      for (var doc in snapshots.docs) {
-        await doc.reference.delete();
+    try {
+      if (selectedIndices.contains(key)) {
+        final snapshots =
+        await userRef.where("key", isEqualTo: key).get();
+        for (var doc in snapshots.docs) {
+          await doc.reference.delete();
+        }
+        selectedIndices.remove(key);
+        showSnack("Removed from your events", false);
+      } else {
+        await userRef.add({'key': key});
+        selectedIndices.add(key);
+        showSnack("Added to your events", true);
       }
-      selectedIndices.remove(key);
-    } else {
-      await userRef.add({'key': key});
-      selectedIndices.add(key);
-    }
 
-    if (mounted) setState(() {});
+      if (mounted) setState(() {});
+    } catch (e) {
+      showSnack("Action failed", false);
+    }
   }
 
   Future<void> getRemovableEvents() async {
@@ -196,9 +202,69 @@ class Homepage extends State<HomepageState> {
     }).toList();
   }
 
+  void showEventDetails(Event e) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                e.title,
+                style: const TextStyle(
+                    fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              Text(e.host, style: TextStyle(color: textMuted)),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  const Icon(Icons.schedule, size: 18),
+                  const SizedBox(width: 8),
+                  Text("${e.startTime} - ${e.endTime}"),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  const Icon(Icons.location_on, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(e.venue)),
+                ],
+              ),
+              const SizedBox(height: 20),
+              const Text("About",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Text(e.description),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-
     if (isLoading) {
       return Scaffold(
         body: Center(child: CircularProgressIndicator(color: primary)),
@@ -216,24 +282,18 @@ class Homepage extends State<HomepageState> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "Calendar",
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: textMain,
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      _headerButton(
-                          icon: Icons.logout,
-                          onTap: () => signOut(context)),
-                    ],
-                  )
+                  Text("Calendar",
+                      style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: textMain)),
+                  IconButton(
+                      icon: Icon(Icons.logout, color: textMain),
+                      onPressed: () => signOut(context))
                 ],
               ),
             ),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: TableCalendar(
@@ -251,6 +311,17 @@ class Homepage extends State<HomepageState> {
                 eventLoader: eventFinder,
               ),
             ),
+
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 16),
+              height: 6,
+              width: 80,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+
             Expanded(
               child: FutureBuilder<bool>(
                 future: getStatus(),
@@ -263,6 +334,7 @@ class Homepage extends State<HomepageState> {
                   }
 
                   return ListView.builder(
+                    padding: const EdgeInsets.all(16),
                     itemCount: filteredEvents.length,
                     itemBuilder: (context, index) {
                       final e = filteredEvents[index];
@@ -276,10 +348,15 @@ class Homepage extends State<HomepageState> {
                           icon: const Icon(Icons.delete,
                               color: Colors.red),
                           onPressed: () async {
-                            await deleteEntry(e);
-                            if (!mounted) return;
-                            await fetchEvents();
-                            setState(() {});
+                            try {
+                              await deleteEntry(e);
+                              await fetchEvents();
+                              if (!mounted) return;
+                              setState(() {});
+                              showSnack("Event deleted", true);
+                            } catch (e) {
+                              showSnack("Failed to delete event", false);
+                            }
                           },
                         );
                       } else {
@@ -301,11 +378,58 @@ class Homepage extends State<HomepageState> {
                         );
                       }
 
-                      return ListTile(
-                        title: Text(e.title),
-                        subtitle:
-                        Text("${e.startTime} - ${e.endTime}"),
-                        trailing: trailing,
+                      return GestureDetector(
+                        onTap: () => showEventDetails(e),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: primary.withValues(alpha: 0.08),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 4,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: primary,
+                                  borderRadius:
+                                  BorderRadius.circular(2),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                                  children: [
+                                    Text(e.title,
+                                        style: const TextStyle(
+                                            fontWeight:
+                                            FontWeight.bold)),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                        "${e.startTime} - ${e.endTime}",
+                                        style: TextStyle(
+                                            color: textMuted)),
+                                    Text(e.venue,
+                                        style: TextStyle(
+                                            color: textMuted)),
+                                  ],
+                                ),
+                              ),
+                              if (trailing != null) trailing,
+                            ],
+                          ),
+                        ),
                       );
                     },
                   );
@@ -315,6 +439,7 @@ class Homepage extends State<HomepageState> {
           ],
         ),
       ),
+
       floatingActionButton: FutureBuilder<bool>(
         future: getStatus(),
         builder: (context, snapshot) {
@@ -336,14 +461,20 @@ class Homepage extends State<HomepageState> {
       ),
     );
   }
-
-  Widget _headerButton({
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return IconButton(
-      icon: Icon(icon, color: textMain),
-      onPressed: onTap,
-    );
+  void showSnack(String text, bool success) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(text),
+          backgroundColor: success ? Colors.green : Colors.red,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
   }
 }
